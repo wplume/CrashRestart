@@ -1,6 +1,5 @@
 package com.hlst.crashrestart;
 
-import android.app.ActivityManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -23,7 +22,7 @@ import java.util.List;
 
 import static com.hlst.crashrestart.Global.TAG;
 
-public class MyService extends Service {
+public class MonitorService extends Service {
 
     private boolean restart;
     private String pkgName = "com.hlst.drivingtestkiosk";
@@ -45,12 +44,12 @@ public class MyService extends Service {
     private void startAnotherApp() {
         String text = "监听者启动被监听程序：" + pkgName;
         Log.d(TAG, text);
-        Toast.makeText(MyService.this, text, Toast.LENGTH_SHORT).show();
+        Toast.makeText(MonitorService.this, text, Toast.LENGTH_SHORT).show();
         Intent intent1 = getPackageManager().getLaunchIntentForPackage(pkgName);
         startActivity(intent1);
     }
 
-    public MyService() {
+    public MonitorService() {
     }
 
     @Override
@@ -122,7 +121,7 @@ public class MyService extends Service {
     }
 
     public static void initService(Context context) {
-        Intent i = new Intent(context, MyService.class);
+        Intent i = new Intent(context, MonitorService.class);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startService(i);
     }
