@@ -64,35 +64,51 @@ public class MonitorService extends Service {
     }
 
     private void startMonitor() {
-        Intent intent = new Intent();
+        final Intent intent = new Intent();
         intent.setAction("com.hlst.drivingtestkiosk.AIDLService");
         intent.setPackage("com.hlst.drivingtestkiosk");
         ServiceConnection serviceConnection = new ServiceConnection() {
+
+            private Thread thread;
+
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 final IMyAidlInterface myAidlInterface = IMyAidlInterface.Stub.asInterface(service);
-                new Thread() {
+                thread = new Thread() {
                     @Override
                     public void run() {
                         super.run();
                         while (true) {
                             try {
                                 sleep(5000);
-                                Log.d(TAG, pkgName + myAidlInterface.getString());
+                                Log.d(TAG, pkgName + myAidlInterface.getString() + getId());
                             } catch (RemoteException e) {
                                 e.printStackTrace();
+                                Log.d(TAG, "中止循环检测线程 RemoteException");
                                 break;
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
+                                Log.d(TAG, "中止循环检测线程 InterruptedException");
+                                break;
                             }
                         }
                     }
-                }.start();
+                };
+                thread.start();
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 Log.d(TAG, "与 " + pkgName + " 服务断开连接");
+                unbindService(this);
+                if (thread != null) {
+                    thread.interrupt();
+                    try {
+                        thread.join();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
                 handler.sendMessageDelayed(Message.obtain(handler, 0), 5000);
                 handler.sendMessageDelayed(Message.obtain(handler, 1), 6000);
             }
